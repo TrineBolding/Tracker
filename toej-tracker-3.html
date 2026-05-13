@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Tøj Tracker">
+  <title>Tøj Tracker</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --cream: #f5f0eb; --cream-dark: #ede7df; --warm-white: #faf8f5;
+      --stone: #9a8f84; --stone-dark: #6b5f56; --charcoal: #2c2420;
+      --gold: #b8956a; --gold-light: #e8ddd0;
+      --green: #4a6741; --green-light: #eaf0e8;
+      --red-light: #f5ebe8; --red: #8b4a3f;
+      --blue-light: #e8eef5; --blue: #3f5a7a;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+    body { font-family: 'Jost', sans-serif; background: var(--cream); color: var(--charcoal); min-height: 100vh; font-weight: 300; }
+    input, select, button { font-family: 'Jost', sans-serif; }
+    .header { background: var(--warm-white); border-bottom: 1px solid var(--cream-dark); padding: 20px 24px 0; position: sticky; top: 0; z-index: 10; }
+    .header-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+    .brand { font-family: 'Cormorant Garamond', serif; font-size: 22px; font-weight: 400; letter-spacing: 3px; text-transform: uppercase; }
+    .brand em { font-style: italic; color: var(--stone); }
+    .sync-pill { font-size: 10px; letter-spacing: 1px; text-transform: uppercase; padding: 4px 10px; border-radius: 20px; transition: all 0.3s; }
+    .sync-ok { background: var(--green-light); color: var(--green); }
+    .sync-ing { background: var(--gold-light); color: var(--gold); }
+    .sync-err { background: var(--red-light); color: var(--red); }
+    .tabs { display: flex; border-top: 1px solid var(--cream-dark); margin: 0 -24px; }
+    .tab { flex: 1; padding: 14px 8px; font-size: 10px; letter-spacing: 2px; text-transform: uppercase; text-align: center; cursor: pointer; border: none; background: transparent; color: var(--stone); font-weight: 400; border-bottom: 2px solid transparent; transition: all 0.2s; }
+    .tab.active { color: var(--charcoal); border-bottom-color: var(--charcoal); }
+    .content { max-width: 480px; margin: 0 auto; padding: 32px 24px 80px; }
+    .section-title { font-family: 'Cormorant Garamond', serif; font-size: 28px; font-weight: 300; letter-spacing: 4px; text-transform: uppercase; margin-bottom: 28px; text-align: center; }
+    .field { margin-bottom: 20px; }
+    .label { font-size: 9px; letter-spacing: 3px; text-transform: uppercase; color: var(--stone); display: block; margin-bottom: 8px; font-weight: 500; }
+    .input, .select { width: 100%; padding: 13px 0; border: none; border-bottom: 1px solid var(--cream-dark); background: transparent; color: var(--charcoal); font-size: 15px; font-weight: 300; outline: none; appearance: none; -webkit-appearance: none; transition: border-color 0.2s; }
+    .input:focus, .select:focus { border-bottom-color: var(--charcoal); }
+    .input::placeholder { color: var(--stone); }
+    .price-row { display: flex; gap: 32px; }
+    .price-row .field { flex: 1; }
+    .img-upload { border: 1px solid var(--cream-dark); background: var(--warm-white); border-radius: 2px; text-align: center; cursor: pointer; margin-bottom: 28px; overflow: hidden; min-height: 160px; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 10px; transition: border-color 0.2s; }
+    .img-upload:hover { border-color: var(--stone); }
+    .img-upload img { width: 100%; max-height: 280px; object-fit: cover; display: block; }
+    .img-upload-icon { font-size: 28px; opacity: 0.4; }
+    .img-upload-text { font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: var(--stone); }
+    .ai-btn { width: 100%; background: var(--charcoal); color: var(--warm-white); border: none; padding: 16px; font-size: 10px; letter-spacing: 3px; text-transform: uppercase; cursor: pointer; margin-bottom: 32px; font-weight: 400; transition: background 0.2s; }
+    .ai-btn:hover { background: var(--stone-dark); }
+    .ai-btn:disabled { background: var(--cream-dark); color: var(--stone); cursor: wait; }
+    .save-btn { width: 100%; background: var(--charcoal); color: var(--warm-white); border: none; padding: 18px; font-size: 10px; letter-spacing: 3px; text-transform: uppercase; cursor: pointer; margin-top: 12px; font-weight: 400; transition: background 0.2s; }
+    .save-btn:hover { background: var(--stone-dark); }
+    .save-btn:disabled { background: var(--cream-dark); color: var(--stone); cursor: not-allowed; }
+    .cancel-btn { width: 100%; background: transparent; color: var(--stone); border: 1px solid var(--cream-dark); padding: 14px; font-size: 10px; letter-spacing: 3px; text-transform: uppercase; cursor: pointer; margin-top: 10px; font-weight: 400; }
+    .profit-box { padding: 16px 0; display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--cream-dark); border-bottom: 1px solid var(--cream-dark); margin: 8px 0; }
+    .profit-label { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--stone); }
+    .profit-val { font-family: 'Cormorant Garamond', serif; font-size: 26px; font-weight: 300; }
+    .profit-val.pos { color: var(--green); } .profit-val.neg { color: var(--red); }
+    .autocomplete-wrap { position: relative; }
+    .autocomplete-list { position: absolute; top: 100%; left: 0; right: 0; background: var(--warm-white); border: 1px solid var(--cream-dark); z-index: 20; box-shadow: 0 8px 24px rgba(44,36,32,0.08); }
+    .autocomplete-item { padding: 12px 16px; font-size: 14px; cursor: pointer; font-weight: 300; border-bottom: 1px solid var(--cream-dark); transition: background 0.15s; }
+    .autocomplete-item:last-child { border-bottom: none; }
+    .autocomplete-item:hover { background: var(--cream); }
+    .summary-bar { background: var(--charcoal); padding: 20px 24px; margin: 0 -24px 32px; display: flex; justify-content: space-between; align-items: center; }
+    .summary-label { font-size: 9px; letter-spacing: 3px; text-transform: uppercase; color: var(--stone); margin-bottom: 4px; }
+    .summary-val { font-family: 'Cormorant Garamond', serif; font-size: 30px; color: var(--warm-white); font-weight: 300; }
+    .excel-btn { background: transparent; color: var(--stone); border: 1px solid var(--stone-dark); padding: 10px 16px; font-size: 9px; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; font-weight: 400; transition: all 0.2s; }
+    .excel-btn:hover { border-color: var(--warm-white); color: var(--warm-white); }
+    .group { margin-bottom: 40px; }
+    .group-header { font-size: 9px; letter-spacing: 4px; text-transform: uppercase; color: var(--stone); margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid var(--cream-dark); }
+    .card { background: var(--warm-white); margin-bottom: 1px; display: flex; transition: background 0.15s; }
+    .card:hover { background: #fff; }
+    .card-img { width: 80px; object-fit: cover; flex-shrink: 0; }
+    .card-body { flex: 1; padding: 16px 18px; }
+    .card-row { display: flex; justify-content: space-between; gap: 12px; }
+    .card-name { font-family: 'Cormorant Garamond', serif; font-size: 17px; font-weight: 400; }
+    .card-desc { font-size: 12px; color: var(--stone); margin-top: 3px; }
+    .card-meta { font-size: 11px; color: var(--stone); margin-top: 4px; }
+    .card-price { text-align: right; flex-shrink: 0; }
+    .card-profit { font-family: 'Cormorant Garamond', serif; font-size: 18px; font-weight: 400; }
+    .card-price-sub { font-size: 10px; color: var(--stone); margin-top: 2px; }
+    .badge { display: inline-block; font-size: 9px; padding: 3px 10px; letter-spacing: 1.5px; text-transform: uppercase; margin-top: 8px; }
+    .card-actions { display: flex; gap: 8px; margin-top: 12px; }
+    .btn-sm { border: 1px solid var(--cream-dark); background: transparent; padding: 5px 12px; font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase; cursor: pointer; color: var(--stone-dark); font-weight: 400; transition: all 0.15s; }
+    .btn-sm:hover { background: var(--cream); }
+    .btn-sm.danger { color: var(--red); border-color: var(--red-light); }
+    .btn-sm.danger:hover { background: var(--red-light); }
+    .btn-sm.primary { color: var(--blue); border-color: var(--blue-light); }
+    .btn-sm.primary:hover { background: var(--blue-light); }
+    .overblik-card { background: var(--warm-white); margin-bottom: 2px; padding: 20px 24px; }
+    .overblik-header { display: flex; justify-content: space-between; align-items: center; }
+    .overblik-left { display: flex; align-items: center; gap: 14px; }
+    .overblik-name { font-family: 'Cormorant Garamond', serif; font-size: 18px; font-weight: 400; letter-spacing: 1px; }
+    .overblik-count { font-size: 10px; color: var(--stone); letter-spacing: 1px; text-transform: uppercase; margin-top: 2px; }
+    .overblik-profit { font-family: 'Cormorant Garamond', serif; font-size: 24px; color: var(--green); font-weight: 300; }
+    .sted-row { display: flex; justify-content: space-between; font-size: 12px; padding: 10px 0; border-bottom: 1px solid var(--cream-dark); color: var(--stone-dark); }
+    .sted-row:last-child { border-bottom: none; }
+    .overblik-items { margin-top: 16px; border-top: 1px solid var(--cream-dark); padding-top: 12px; }
+    .overblik-item { font-size: 12px; color: var(--stone); padding: 6px 0; border-bottom: 1px solid var(--cream-dark); }
+    .overblik-item:last-child { border-bottom: none; }
+    .modal-overlay { position: fixed; inset: 0; background: rgba(44,36,32,0.4); z-index: 100; display: flex; align-items: flex-end; justify-content: center; backdrop-filter: blur(2px); }
+    .modal { background: var(--warm-white); padding: 32px 24px 48px; width: 100%; max-width: 480px; }
+    .modal-sub { font-size: 9px; letter-spacing: 3px; text-transform: uppercase; color: var(--stone); margin-bottom: 6px; }
+    .modal-title { font-family: 'Cormorant Garamond', serif; font-size: 22px; font-weight: 400; margin-bottom: 24px; }
+    .status-btn { width: 100%; padding: 14px 18px; text-align: left; cursor: pointer; font-size: 12px; letter-spacing: 1px; margin-bottom: 6px; border: 1px solid var(--cream-dark); background: transparent; color: var(--charcoal); font-weight: 300; transition: all 0.15s; }
+    .status-btn.active { background: var(--charcoal); color: var(--warm-white); border-color: var(--charcoal); }
+    .empty { text-align: center; padding: 80px 20px; }
+    .empty-icon { font-size: 36px; opacity: 0.3; margin-bottom: 16px; }
+    .empty-text { font-family: 'Cormorant Garamond', serif; font-size: 20px; font-weight: 300; letter-spacing: 2px; color: var(--stone); text-transform: uppercase; }
+    .loading { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px; background: var(--cream); }
+    .loading-brand { font-family: 'Cormorant Garamond', serif; font-size: 28px; font-weight: 300; letter-spacing: 6px; text-transform: uppercase; }
+    .loading-sub { font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: var(--stone); }
+    .divider { height: 1px; background: var(--cream-dark); margin: 24px 0; }
+  </style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyqWMoSo5LEd5czqobAEX7Fv4BHwNVLpMTysSC_GVNfyXP79IyShhXZ7LjHcc6J9ncT/exec";
+const STAND_OPTIONS = ["Ny med prismærke","Som ny","Meget god","God","Acceptabel"];
+const KATEGORI_OPTIONS = ["Babyudstyr","Børnetøj","Dametøj","Herretøj"];
+const SALGSSTED_OPTIONS = ["Min svigermor","ReRobe","DBA","Børneloppen Kolding","Sellpy"];
+const TOEJTYPE_OPTIONS = ["Bluse","Body","Buksedragt","Bukser","Cardigan","Frakke","Hue","Jakke","Jumpsuit","Kjole","Leggings","Nederdel","Nattøj","Shorts","Sokker","Sparkedragt","Strikvest","Sweatshirt","Sweater","Svømmetøj","T-shirt","Tights","Trøje","Tunika","Undertøj","Vinterdragt","Vest"];
+const MAERKE_FORSLAG = ["Adidas","Arket","Bestseller","Bonpoint","Bruuns Bazaar","Calvin Klein","Cardigan","Carhartt","COS","DAY Birger et Mikkelsen","Designers Remix","DKNY","Esprit","FiliFjonka","FILA","Ganni","Gap","Gestuz","H&M","Hugo Boss","Ilse Jacobsen","Jack & Jones","Jacqueline de Yong","Katvig","Levi's","Liewood","Mango","Marimekko","Miniature","Moss Copenhagen","Muddy Puddles","Name It","New Balance","Next","Nike","Noisy May","Nordic Label","Noppies","Numph","Only","Peak Performance","Pieces","Puma","Ralph Lauren","Reima","Selected","Soft Gallery","Stine Goya","Stonz","Superdry","The North Face","Tiger of Sweden","Tommy Hilfiger","Tretorn","Vero Moda","Vila","Wheat","Zara"];
+const STATUSSER = [
+  {key:"klar",label:"Klar",emoji:"○",color:"#6b5f56",bg:"#f0ebe5"},
+  {key:"tilsalg",label:"Til salg",emoji:"◈",color:"#3f5a7a",bg:"#e8eef5"},
+  {key:"solgt",label:"Solgt",emoji:"✓",color:"#4a6741",bg:"#eaf0e8"},
+  {key:"arkiveret",label:"Arkiveret",emoji:"◻",color:"#9a8f84",bg:"#f5f0eb"},
+];
+let state = {
+  poster:[],view:"tilfoej",editIndex:null,loading:true,syncing:false,syncStatus:null,
+  form:emptyForm(),imagePreview:null,imageBase64:null,mediaType:"image/jpeg",analyzing:false,
+  maerkeSuggestions:[],toejtypeSuggestions:[],statusModal:null,
+};
+function emptyForm(){return{kategori:"",maerke:"",toejtype:"",beskrivelse:"",stoerrelse:"",stand:"",indkoebspris:"",salgspris:"",status:"klar",salgssted:""};}
+function setState(p){state={...state,...p};render();}
+async function loadFromSheets(){
+  try{const r=await fetch(SCRIPT_URL);const d=await r.json();if(Array.isArray(d))setState({poster:d,loading:false});else setState({loading:false});}
+  catch(e){setState({loading:false});}
+}
+async function syncToSheets(poster){
+  setState({syncing:true,syncStatus:null});
+  try{
+    await fetch(SCRIPT_URL,{method:"POST",mode:"no-cors",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"save",rows:poster.map(p=>({...p,billede:""}))})});
+    setState({syncing:false,syncStatus:"ok"});setTimeout(()=>setState({syncStatus:null}),3000);
+  }catch(e){setState({syncing:false,syncStatus:"fejl"});setTimeout(()=>setState({syncStatus:null}),3000);}
+}
+function updatePoster(p){setState({poster:p});syncToSheets(p);}
+async function analyzeImage(){
+  if(!state.imageBase64)return;
+  setState({analyzing:true});
+  try{
+    const res=await fetch(SCRIPT_URL,{
+      method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({action:"analyze",imageData:state.imageBase64,mediaType:state.mediaType})
+    });
+    const text=await res.text();
+    const p=JSON.parse(text.replace(/```json|```/g,"").trim());
+    setState({analyzing:false,form:{...state.form,
+      maerke:p.maerke||state.form.maerke,beskrivelse:p.beskrivelse||state.form.beskrivelse,
+      stoerrelse:p.stoerrelse||state.form.stoerrelse,stand:p.stand||state.form.stand,
+      kategori:p.kategori||state.form.kategori,toejtype:p.toejtype||state.form.toejtype}});
+  }catch(e){console.error(e);setState({analyzing:false});}
+}
+function sugg(val,liste,field){
+  if(!val)return[];const l=val.toLowerCase();
+  const brugte=[...new Set(state.poster.map(p=>p[field]).filter(Boolean))];
+  const bm=brugte.filter(m=>m.toLowerCase().includes(l));
+  const lm=liste.filter(m=>m.toLowerCase().includes(l)&&!bm.includes(m));
+  return[...bm,...lm].slice(0,6);
+}
+function gemVare(){
+  const item={...state.form,billede:state.imagePreview||""};
+  const np=state.editIndex!==null?state.poster.map((p,i)=>i===state.editIndex?item:p):[item,...state.poster];
+  updatePoster(np);setState({form:emptyForm(),imagePreview:null,imageBase64:null,editIndex:null,view:"liste"});
+}
+function redigerVare(i){const item=state.poster[i];setState({form:{...item,billede:undefined},imagePreview:item.billede||null,editIndex:i,view:"tilfoej"});}
+function sletVare(i){if(confirm("Slet denne vare?"))updatePoster(state.poster.filter((_,idx)=>idx!==i));}
+function opdaterStatus(index,nyStatus,salgssted){updatePoster(state.poster.map((p,i)=>i===index?{...p,status:nyStatus,salgssted}:p));setState({statusModal:null});}
+function eksporter(){
+  const h=["Status","Salgssted","Kategori","Mærke","Type","Beskrivelse","Størrelse","Stand","Indkøbspris","Salgspris","Fortjeneste"];
+  const r=state.poster.map(p=>[p.status,p.salgssted,p.kategori,p.maerke,p.toejtype,p.beskrivelse,p.stoerrelse,p.stand,p.indkoebspris,p.salgspris,(parseFloat(p.salgspris)-parseFloat(p.indkoebspris))||""]);
+  const csv=[h,...r].map(r=>r.map(c=>`"${c??""}"`).join(";")).join("\n");
+  const a=document.createElement("a");a.href=URL.createObjectURL(new Blob(["\uFEFF"+csv],{type:"text/csv;charset=utf-8;"}));a.download="tøj-oversigt.csv";a.click();
+}
+function si(key){return STATUSSER.find(s=>s.key===key)||STATUSSER[0];}
+function fortjeneste(){const s=parseFloat(state.form.salgspris),i=parseFloat(state.form.indkoebspris);return(!isNaN(s)&&!isNaN(i))?s-i:null;}
+function esc(s){return String(s||"").replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;");}
+function setF(f,v){setState({form:{...state.form,[f]:v}});}
+function pickM(s){setState({form:{...state.form,maerke:s},maerkeSuggestions:[]});}
+function pickT(s){setState({form:{...state.form,toejtype:s},toejtypeSuggestions:[]});}
+function setModalStatus(s){setState({statusModal:{...state.statusModal,valgtStatus:s}});}
+function setModalSted(s){setState({statusModal:{...state.statusModal,valgtSted:s}});}
+function openModal(i){setState({statusModal:{item:state.poster[i],index:i,valgtStatus:state.poster[i].status||"klar",valgtSted:state.poster[i].salgssted||""}});}
+
+function render(){document.getElementById("app").innerHTML=buildHTML();attachEvents();}
+
+function buildHTML(){
+  if(state.loading)return`<div class="loading"><div class="loading-brand">Tøj <em style="font-style:italic;color:#9a8f84">Tracker</em></div><div class="loading-sub">Henter dine varer</div></div>`;
+  const syncPill=state.syncing?`<div class="sync-pill sync-ing">Gemmer…</div>`:state.syncStatus==="ok"?`<div class="sync-pill sync-ok">Gemt ✓</div>`:state.syncStatus==="fejl"?`<div class="sync-pill sync-err">Fejl</div>`:``;
+  return`<div class="header"><div class="header-top"><div class="brand">Tøj <em>Tracker</em></div>${syncPill}</div>
+  <div class="tabs">${[["tilfoej",state.editIndex!==null?"Rediger":"Tilføj"],["liste",`Liste · ${state.poster.length}`],["overblik","Overblik"]].map(([k,l])=>`<button class="tab ${state.view===k?"active":""}" onclick="setState({view:'${k}'})">${l}</button>`).join("")}</div></div>
+  <div class="content">${state.view==="tilfoej"?buildTilfoej():state.view==="liste"?buildListe():buildOverblik()}</div>
+  ${state.statusModal?buildModal():""}`;
+}
+
+function buildTilfoej(){
+  const f=fortjeneste();const kg=state.form.maerke&&state.form.indkoebspris;
+  return`<div class="section-title">${state.editIndex!==null?"Rediger vare":"Ny vare"}</div>
+  <div class="img-upload" id="img-zone">${state.imagePreview?`<img src="${state.imagePreview}" alt="">`:
+    `<div class="img-upload-icon">◻</div><div class="img-upload-text">Tilføj billede</div>`}</div>
+  <input type="file" id="img-input" accept="image/*" capture="environment" style="display:none">
+  ${state.imagePreview?`<button class="ai-btn" id="ai-btn" ${state.analyzing?"disabled":""}>${state.analyzing?"Analyserer…":"Analyser med AI"}</button>`:""}
+  <div class="field"><label class="label">Kategori</label><select class="select" onchange="setF('kategori',this.value)"><option value="">Vælg…</option>${KATEGORI_OPTIONS.map(o=>`<option ${state.form.kategori===o?"selected":""}>${o}</option>`).join("")}</select></div>
+  <div class="field"><label class="label">Mærke</label><div class="autocomplete-wrap"><input class="input" type="text" id="maerke-i" value="${esc(state.form.maerke)}" placeholder="H&M, Zara, Name It…" autocomplete="off">${state.maerkeSuggestions.length?`<div class="autocomplete-list">${state.maerkeSuggestions.map(s=>`<div class="autocomplete-item" onclick="pickM('${esc(s)}')">${s}</div>`).join("")}</div>`:""}</div></div>
+  <div class="field"><label class="label">Type</label><div class="autocomplete-wrap"><input class="input" type="text" id="toejtype-i" value="${esc(state.form.toejtype)}" placeholder="Kjole, Bukser, Bluse…" autocomplete="off">${state.toejtypeSuggestions.length?`<div class="autocomplete-list">${state.toejtypeSuggestions.map(s=>`<div class="autocomplete-item" onclick="pickT('${esc(s)}')">${s}</div>`).join("")}</div>`:""}</div></div>
+  <div class="field"><label class="label">Beskrivelse</label><input class="input" type="text" value="${esc(state.form.beskrivelse)}" placeholder="Rød sommerkjole med blomster" onchange="setF('beskrivelse',this.value)"></div>
+  <div class="field"><label class="label">Størrelse</label><input class="input" type="text" value="${esc(state.form.stoerrelse)}" placeholder="104, S, 36…" onchange="setF('stoerrelse',this.value)"></div>
+  <div class="field"><label class="label">Stand</label><select class="select" onchange="setF('stand',this.value)"><option value="">Vælg…</option>${STAND_OPTIONS.map(o=>`<option ${state.form.stand===o?"selected":""}>${o}</option>`).join("")}</select></div>
+  <div class="price-row"><div class="field"><label class="label">Indkøbspris (kr)</label><input class="input" type="number" value="${state.form.indkoebspris}" placeholder="0" onchange="setF('indkoebspris',this.value)"></div>
+  <div class="field"><label class="label">Salgspris (kr)</label><input class="input" type="number" value="${state.form.salgspris}" placeholder="0" onchange="setF('salgspris',this.value)"></div></div>
+  ${f!==null?`<div class="profit-box"><span class="profit-label">Fortjeneste</span><span class="profit-val ${f>=0?"pos":"neg"}">${f>=0?"+":""}${f} kr</span></div>`:`<div class="divider"></div>`}
+  <button class="save-btn" ${!kg?"disabled":""} onclick="gemVare()">${state.editIndex!==null?"Gem ændringer":"Gem vare"}</button>
+  ${state.editIndex!==null?`<button class="cancel-btn" onclick="setState({editIndex:null,form:emptyForm(),imagePreview:null})">Annuller</button>`:""}`;
+}
+
+function buildListe(){
+  const ts=state.poster.filter(p=>p.status==="solgt").reduce((s,p)=>{const f=parseFloat(p.salgspris)-parseFloat(p.indkoebspris);return s+(isNaN(f)?0:f);},0);
+  if(!state.poster.length)return`<div class="empty"><div class="empty-icon">◻</div><div class="empty-text">Ingen varer endnu</div></div>`;
+  const grupper=[{label:"Babyudstyr",match:k=>k==="Babyudstyr"},{label:"Børnetøj",match:k=>k==="Børnetøj"},{label:"Dame & Herre",match:k=>k==="Dametøj"||k==="Herretøj"||!k}];
+  return`<div class="summary-bar"><div><div class="summary-label">Solgt i alt</div><div class="summary-val">+${ts.toFixed(0)} kr</div></div><button class="excel-btn" onclick="eksporter()">Eksporter</button></div>
+  ${grupper.map(({label,match})=>{
+    const varer=state.poster.filter(p=>match(p.kategori));if(!varer.length)return"";
+    return`<div class="group"><div class="group-header">${label} — ${varer.length} varer</div>
+    ${varer.map(item=>{
+      const i=state.poster.indexOf(item);const s=si(item.status||"klar");
+      const fv=parseFloat(item.salgspris)-parseFloat(item.indkoebspris);
+      return`<div class="card">${item.billede?`<img class="card-img" src="${item.billede}" alt="">`:""}
+      <div class="card-body"><div class="card-row"><div>
+        <div class="card-name">${esc(item.maerke)||"Ukendt mærke"}</div>
+        <div class="card-desc">${esc(item.beskrivelse)}</div>
+        <div class="card-meta">${[item.toejtype,item.stoerrelse,item.stand].filter(Boolean).join("  ·  ")}</div>
+        <div class="badge" style="background:${s.bg};color:${s.color}">${s.emoji} ${s.label}${item.salgssted?`  ·  ${esc(item.salgssted)}`:""}</div>
+      </div><div class="card-price">
+        <div class="card-profit" style="color:${!isNaN(fv)&&fv>=0?"var(--green)":"var(--stone)"}">${!isNaN(fv)?`${fv>=0?"+":""}${fv} kr`:"—"}</div>
+        <div class="card-price-sub">${item.indkoebspris||"?"} → ${item.salgspris||"?"} kr</div>
+      </div></div>
+      <div class="card-actions"><button class="btn-sm primary" onclick="openModal(${i})">Status</button><button class="btn-sm" onclick="redigerVare(${i})">Rediger</button><button class="btn-sm danger" onclick="sletVare(${i})">Slet</button></div>
+      </div></div>`;
+    }).join("")}</div>`;
+  }).join("")}`;
+}
+
+function buildOverblik(){
+  return STATUSSER.map(st=>{
+    const varer=state.poster.filter(p=>(p.status||"klar")===st.key);
+    const fortj=varer.reduce((s,p)=>{const f=parseFloat(p.salgspris)-parseFloat(p.indkoebspris);return s+(isNaN(f)?0:f);},0);
+    return`<div class="overblik-card"><div class="overblik-header">
+      <div class="overblik-left"><span style="font-size:18px;color:${st.color}">${st.emoji}</span>
+      <div><div class="overblik-name">${st.label}</div><div class="overblik-count">${varer.length} vare${varer.length!==1?"r":""}</div></div></div>
+      ${st.key==="solgt"&&varer.length?`<div class="overblik-profit">+${fortj.toFixed(0)} kr</div>`:""}
+    </div>
+    ${st.key==="tilsalg"&&varer.length?`<div class="overblik-items">${SALGSSTED_OPTIONS.map(sted=>{const n=varer.filter(p=>p.salgssted===sted).length;return n?`<div class="sted-row"><span>${sted}</span><span style="font-weight:500;color:var(--charcoal)">${n} stk</span></div>`:""}).join("")}${varer.filter(p=>!p.salgssted).length?`<div class="sted-row"><span style="color:var(--stone)">Intet sted valgt</span><span style="font-weight:500">${varer.filter(p=>!p.salgssted).length} stk</span></div>`:""}</div>`:""}
+    ${(st.key==="arkiveret"||st.key==="klar")&&varer.length?`<div class="overblik-items">${(st.key==="klar"?varer.slice(0,4):varer).map(p=>`<div class="overblik-item">${esc(p.maerke)} — ${esc(p.toejtype||p.beskrivelse)}</div>`).join("")}${st.key==="klar"&&varer.length>4?`<div class="overblik-item" style="color:var(--stone)">…og ${varer.length-4} mere</div>`:""}</div>`:""}
+    </div>`;
+  }).join("");
+}
+
+function buildModal(){
+  const {item,index,valgtStatus,valgtSted}=state.statusModal;
+  return`<div class="modal-overlay" onclick="setState({statusModal:null})"><div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-sub">Opdater status</div>
+    <div class="modal-title">${esc(item.maerke)} — ${esc(item.toejtype||item.beskrivelse)}</div>
+    ${STATUSSER.map(st=>`<button class="status-btn ${valgtStatus===st.key?"active":""}" onclick="setModalStatus('${st.key}')" style="${valgtStatus!==st.key?`color:${st.color}`:""}">${st.emoji} ${st.label}</button>`).join("")}
+    ${valgtStatus==="tilsalg"?`<div class="field" style="margin-top:16px"><label class="label">Salgssted</label><select class="select" onchange="setModalSted(this.value)"><option value="">Vælg…</option>${SALGSSTED_OPTIONS.map(o=>`<option ${valgtSted===o?"selected":""}>${o}</option>`).join("")}</select></div>`:""}
+    <button class="save-btn" style="margin-top:24px" onclick="opdaterStatus(${index},'${valgtStatus}','${valgtSted||""}')">Gem status</button>
+  </div></div>`;
+}
+
+function attachEvents(){
+  const zone=document.getElementById("img-zone"),input=document.getElementById("img-input");
+  if(zone&&input){
+    zone.onclick=()=>input.click();
+    input.onchange=e=>{
+      const file=e.target.files[0];if(!file)return;
+      const mt=file.type||"image/jpeg";
+      const r=new FileReader();
+      r.onload=ev=>setState({imagePreview:ev.target.result,imageBase64:ev.target.result.split(",")[1],mediaType:mt});
+      r.readAsDataURL(file);
+    };
+  }
+  const aiBtn=document.getElementById("ai-btn");
+  if(aiBtn)aiBtn.onclick=analyzeImage;
+  const mi=document.getElementById("maerke-i");
+  if(mi){mi.oninput=e=>setState({form:{...state.form,maerke:e.target.value},maerkeSuggestions:sugg(e.target.value,MAERKE_FORSLAG,"maerke")});mi.onblur=()=>setTimeout(()=>setState({maerkeSuggestions:[]}),200);}
+  const ti=document.getElementById("toejtype-i");
+  if(ti){ti.oninput=e=>setState({form:{...state.form,toejtype:e.target.value},toejtypeSuggestions:sugg(e.target.value,TOEJTYPE_OPTIONS,"toejtype")});ti.onblur=()=>setTimeout(()=>setState({toejtypeSuggestions:[]}),200);}
+}
+loadFromSheets();render();
+</script>
+</body>
+</html>
