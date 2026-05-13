@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="apple-mobile-web-app-title" content="Tøj Tracker">
+  <title>Tøj Tracker</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+    body { font-family: Georgia, 'Times New Roman', serif; background: #faf7f4; color: #1a1410; min-height: 100vh; }
+    input, select, button { font-family: Georgia, serif; }
+    .header { background: #1a1410; padding: 24px 20px 16px; text-align: center; position: sticky; top: 0; z-index: 10; }
+    .header-sub { font-size: 11px; letter-spacing: 4px; color: #c9a96e; text-transform: uppercase; margin-bottom: 4px; }
+    .header-title { font-size: 24px; color: #faf7f4; font-weight: normal; letter-spacing: 1px; }
+    .sync-status { font-size: 11px; margin-top: 6px; height: 16px; }
+    .tabs { display: flex; justify-content: center; margin-top: 12px; }
+    .tab { padding: 7px 0; font-size: 11px; letter-spacing: 1px; text-transform: uppercase; cursor: pointer; border: 1px solid #c9a96e; background: transparent; color: #c9a96e; flex: 1; max-width: 120px; }
+    .tab:first-child { border-radius: 4px 0 0 4px; }
+    .tab:last-child { border-radius: 0 4px 4px 0; }
+    .tab.active { background: #c9a96e; color: #1a1410; }
+    .content { max-width: 500px; margin: 0 auto; padding: 20px 16px 60px; }
+    .img-upload { border: 2px dashed #c9a96e; border-radius: 12px; text-align: center; cursor: pointer; margin-bottom: 16px; overflow: hidden; background: #fff; min-height: 120px; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 8px; }
+    .img-upload img { width: 100%; max-height: 260px; object-fit: cover; display: block; }
+    .img-upload-icon { font-size: 36px; }
+    .img-upload-text { font-size: 13px; color: #7a6a5a; }
+    .ai-btn { width: 100%; background: #c9a96e; color: #1a1410; border: none; border-radius: 8px; padding: 13px; font-size: 14px; cursor: pointer; margin-bottom: 16px; letter-spacing: 1px; font-weight: bold; }
+    .ai-btn:disabled { background: #d4b896; cursor: wait; }
+    .form-group { display: flex; flex-direction: column; gap: 12px; }
+    .field { display: flex; flex-direction: column; gap: 4px; }
+    .label { font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: #7a6a5a; }
+    .input, .select { width: 100%; padding: 11px 12px; border: 1px solid #d4cdc8; border-radius: 8px; font-size: 15px; font-family: Georgia, serif; background: #fff; color: #1a1410; outline: none; appearance: none; -webkit-appearance: none; }
+    .price-row { display: flex; gap: 10px; }
+    .price-row .field { flex: 1; }
+    .price-row .input { text-align: right; }
+    .profit-box { border-radius: 8px; padding: 10px 14px; display: flex; justify-content: space-between; align-items: center; }
+    .profit-box.pos { background: #eaf5ea; border: 1px solid #a8d5a2; }
+    .profit-box.neg { background: #fdecea; border: 1px solid #f5b7b1; }
+    .profit-label { font-size: 12px; letter-spacing: 1px; text-transform: uppercase; color: #7a6a5a; }
+    .profit-val { font-size: 20px; font-weight: bold; }
+    .profit-val.pos { color: #2d6a2d; }
+    .profit-val.neg { color: #c0392b; }
+    .save-btn { width: 100%; background: #1a1410; color: #faf7f4; border: none; border-radius: 8px; padding: 15px; font-size: 14px; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; margin-top: 4px; }
+    .save-btn:disabled { background: #d4cdc8; cursor: not-allowed; }
+    .cancel-btn { width: 100%; background: transparent; color: #7a6a5a; border: 1px solid #d4cdc8; border-radius: 8px; padding: 10px; font-size: 13px; cursor: pointer; }
+    .summary-box { background: #1a1410; border-radius: 12px; padding: 16px 20px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
+    .summary-label { font-size: 11px; letter-spacing: 2px; color: #c9a96e; text-transform: uppercase; }
+    .summary-val { font-size: 28px; color: #faf7f4; margin-top: 2px; }
+    .excel-btn { background: #c9a96e; color: #1a1410; border: none; border-radius: 8px; padding: 10px 14px; font-size: 12px; letter-spacing: 1px; cursor: pointer; }
+    .group-header { font-size: 11px; letter-spacing: 3px; text-transform: uppercase; color: #7a6a5a; margin-bottom: 10px; padding-bottom: 6px; border-bottom: 1px solid #e8e0d8; }
+    .group { margin-bottom: 28px; }
+    .card { background: #fff; border-radius: 12px; margin-bottom: 10px; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,0.06); display: flex; }
+    .card-img { width: 72px; object-fit: cover; flex-shrink: 0; }
+    .card-body { flex: 1; padding: 11px 13px; }
+    .card-row { display: flex; justify-content: space-between; }
+    .card-name { font-weight: bold; font-size: 14px; }
+    .card-desc { font-size: 12px; color: #7a6a5a; margin-top: 1px; }
+    .card-meta { font-size: 11px; color: #aaa; margin-top: 3px; }
+    .card-badges { margin-top: 6px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+    .badge { font-size: 10px; padding: 2px 8px; border-radius: 20px; letter-spacing: 1px; text-transform: uppercase; }
+    .card-price { text-align: right; flex-shrink: 0; margin-left: 8px; }
+    .card-profit { font-size: 14px; font-weight: bold; }
+    .card-price-sub { font-size: 10px; color: #aaa; margin-top: 2px; }
+    .card-actions { display: flex; gap: 6px; margin-top: 9px; flex-wrap: wrap; }
+    .btn-sm { border: none; border-radius: 6px; padding: 5px 10px; font-size: 12px; font-family: Georgia, serif; cursor: pointer; }
+    .empty { text-align: center; padding: 60px 20px; color: #aaa; }
+    .empty-icon { font-size: 40px; }
+    .empty-text { margin-top: 12px; font-size: 14px; }
+    .overblik-card { background: #fff; border-radius: 12px; margin-bottom: 14px; padding: 16px 18px; box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
+    .overblik-header { display: flex; justify-content: space-between; align-items: center; }
+    .overblik-left { display: flex; align-items: center; gap: 10px; }
+    .overblik-emoji { font-size: 24px; }
+    .overblik-name { font-weight: bold; font-size: 15px; }
+    .overblik-count { font-size: 12px; color: #aaa; }
+    .overblik-profit { font-size: 20px; font-weight: bold; color: #2d6a2d; }
+    .sted-row { display: flex; justify-content: space-between; font-size: 13px; padding: 6px 12px; border-radius: 8px; margin-top: 4px; }
+    .autocomplete-list { position: absolute; top: 100%; left: 0; right: 0; background: #fff; border: 1px solid #d4cdc8; border-radius: 0 0 8px 8px; z-index: 20; box-shadow: 0 4px 12px rgba(0,0,0,0.1); overflow: hidden; }
+    .autocomplete-item { padding: 10px 14px; font-size: 14px; cursor: pointer; border-bottom: 1px solid #f0ebe5; }
+    .autocomplete-item:last-child { border-bottom: none; }
+    .autocomplete-item:hover { background: #faf7f4; }
+    .autocomplete-wrap { position: relative; }
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 100; display: flex; align-items: flex-end; justify-content: center; }
+    .modal { background: #faf7f4; border-radius: 16px 16px 0 0; padding: 24px 20px 36px; width: 100%; max-width: 500px; }
+    .modal-sub { font-size: 11px; letter-spacing: 3px; text-transform: uppercase; color: #7a6a5a; margin-bottom: 4px; }
+    .modal-title { font-weight: bold; font-size: 16px; margin-bottom: 16px; }
+    .status-btn { width: 100%; border-radius: 10px; padding: 12px 16px; text-align: left; cursor: pointer; font-family: Georgia, serif; font-size: 14px; margin-bottom: 8px; border: 2px solid #e8e0d8; background: #fff; }
+    .loading { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #7a6a5a; gap: 16px; }
+  </style>
+</head>
+<body>
+
+<div id="app"></div>
+
+<script>
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyqWMoSo5LEd5czqobAEX7Fv4BHwNVLpMTysSC_GVNfyXP79IyShhXZ7LjHcc6J9ncT/exec";
+
+const STAND_OPTIONS = ["Ny med prismærke","Som ny","Meget god","God","Acceptabel"];
+const KATEGORI_OPTIONS = ["Babyudstyr","Børnetøj","Dametøj","Herretøj"];
+const SALGSSTED_OPTIONS = ["Min svigermor","ReRobe","DBA","Børneloppen Kolding","Sellpy"];
+const TOEJTYPE_OPTIONS = ["Bluse","Body","Buksedragt","Bukser","Cardigan","Frakke","Hue","Jakke","Jumpsuit","Kjole","Leggings","Nederdel","Nattøj","Shorts","Sokker","Sparkedragt","Strikvest","Sweatshirt","Sweater","Svømmetøj","T-shirt","Tights","Trøje","Tunika","Undertøj","Vinterdragt","Vest"];
+const MAERKE_FORSLAG = ["Adidas","Arket","Bestseller","Bonpoint","Bruuns Bazaar","Calvin Klein","Cardigan","Carhartt","COS","DAY Birger et Mikkelsen","Designers Remix","DKNY","Esprit","FiliFjonka","FILA","Ganni","Gap","Gestuz","H&M","Hugo Boss","Ilse Jacobsen","Jack & Jones","Jacqueline de Yong","Katvig","Levi's","Liewood","Mango","Marimekko","Miniature","Moss Copenhagen","Muddy Puddles","Name It","New Balance","Next","Nike","Noisy May","Nordic Label","Noppies","Numph","Only","Peak Performance","Pieces","Puma","Ralph Lauren","Reima","Selected","Soft Gallery","Stine Goya","Stonz","Superdry","The North Face","Tiger of Sweden","Tommy Hilfiger","Tretorn","Vero Moda","Vila","Wheat","Zara"];
+const STATUSSER = [
+  { key:"klar", label:"Klar", emoji:"📋", color:"#7a6a5a", bg:"#f0ebe5" },
+  { key:"tilsalg", label:"Til salg", emoji:"🏷️", color:"#1a5276", bg:"#eaf3fb" },
+  { key:"solgt", label:"Solgt", emoji:"✅", color:"#1e7e34", bg:"#eaf5ea" },
+  { key:"arkiveret", label:"Arkiveret", emoji:"📦", color:"#888", bg:"#f5f5f5" },
+];
+
+let state = {
+  poster: [],
+  view: "tilfoej",
+  editIndex: null,
+  loading: true,
+  syncing: false,
+  syncStatus: null,
+  form: emptyForm(),
+  imagePreview: null,
+  imageBase64: null,
+  analyzing: false,
+  maerkeSuggestions: [],
+  toejtypeSuggestions: [],
+  statusModal: null,
+};
+
+function emptyForm() {
+  return { kategori:"", maerke:"", toejtype:"", beskrivelse:"", stoerrelse:"", stand:"", indkoebspris:"", salgspris:"", status:"klar", salgssted:"" };
+}
+
+function setState(patch) {
+  state = { ...state, ...patch };
+  render();
+}
+
+// ── Google Sheets ──
+async function loadFromSheets() {
+  try {
+    const res = await fetch(SCRIPT_URL);
+    const data = await res.json();
+    if (Array.isArray(data)) setState({ poster: data, loading: false });
+    else setState({ loading: false });
+  } catch(e) { setState({ loading: false }); }
+}
+
+async function syncToSheets(poster) {
+  setState({ syncing: true, syncStatus: null });
+  try {
+    await fetch(SCRIPT_URL, {
+      method: "POST", mode: "no-cors",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "save", rows: poster.map(p => ({ ...p, billede: "" })) }),
+    });
+    setState({ syncing: false, syncStatus: "ok" });
+    setTimeout(() => setState({ syncStatus: null }), 3000);
+  } catch(e) {
+    setState({ syncing: false, syncStatus: "fejl" });
+    setTimeout(() => setState({ syncStatus: null }), 3000);
+  }
+}
+
+function updatePoster(nyePoster) {
+  setState({ poster: nyePoster });
+  syncToSheets(nyePoster);
+}
+
+// ── AI analyse ──
+async function analyzeImage() {
+  if (!state.imageBase64) return;
+  setState({ analyzing: true });
+  try {
+    const res = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: "claude-sonnet-4-20250514", max_tokens: 1000,
+        messages: [{ role: "user", content: [
+          { type: "image", source: { type: "base64", media_type: "image/jpeg", data: state.imageBase64 } },
+          { type: "text", text: `Du er ekspert i brugt tøj. Returner KUN JSON: {"maerke":"","beskrivelse":"kort dansk max 10 ord","stoerrelse":"","stand":"Ny med prismærke eller Som ny eller Meget god eller God eller Acceptabel","kategori":"Babyudstyr eller Børnetøj eller Dametøj eller Herretøj","toejtype":"dansk tøjtype"}` }
+        ]}]
+      })
+    });
+    const data = await res.json();
+    const text = data.content?.find(b => b.type === "text")?.text || "{}";
+    const parsed = JSON.parse(text.replace(/```json|```/g, "").trim());
+    setState({ analyzing: false, form: { ...state.form,
+      maerke: parsed.maerke || state.form.maerke,
+      beskrivelse: parsed.beskrivelse || state.form.beskrivelse,
+      stoerrelse: parsed.stoerrelse || state.form.stoerrelse,
+      stand: parsed.stand || state.form.stand,
+      kategori: parsed.kategori || state.form.kategori,
+      toejtype: parsed.toejtype || state.form.toejtype,
+    }});
+  } catch(e) { setState({ analyzing: false }); }
+}
+
+// ── Helpers ──
+function suggestions(val, liste, field) {
+  if (!val) return [];
+  const lower = val.toLowerCase();
+  const brugte = [...new Set(state.poster.map(p => p[field]).filter(Boolean))];
+  const bm = brugte.filter(m => m.toLowerCase().includes(lower));
+  const lm = liste.filter(m => m.toLowerCase().includes(lower) && !bm.includes(m));
+  return [...bm, ...lm].slice(0, 6);
+}
+
+function gemVare() {
+  const item = { ...state.form, billede: state.imagePreview || "" };
+  let nyePoster;
+  if (state.editIndex !== null) {
+    nyePoster = state.poster.map((p,i) => i === state.editIndex ? item : p);
+  } else {
+    nyePoster = [item, ...state.poster];
+  }
+  updatePoster(nyePoster);
+  setState({ form: emptyForm(), imagePreview: null, imageBase64: null, editIndex: null, view: "liste" });
+}
+
+function redigerVare(i) {
+  const item = state.poster[i];
+  setState({ form: { ...item, billede: undefined }, imagePreview: item.billede || null, editIndex: i, view: "tilfoej" });
+}
+
+function sletVare(i) {
+  if (confirm("Slet denne vare?")) updatePoster(state.poster.filter((_,idx) => idx !== i));
+}
+
+function opdaterStatus(index, nyStatus, salgssted) {
+  const nyePoster = state.poster.map((p,i) => i === index ? { ...p, status: nyStatus, salgssted: salgssted } : p);
+  updatePoster(nyePoster);
+  setState({ statusModal: null });
+}
+
+function eksporter() {
+  const header = ["Status","Salgssted","Kategori","Mærke","Type","Beskrivelse","Størrelse","Stand","Indkøbspris","Salgspris","Fortjeneste"];
+  const rows = state.poster.map(p => [p.status,p.salgssted,p.kategori,p.maerke,p.toejtype,p.beskrivelse,p.stoerrelse,p.stand,p.indkoebspris,p.salgspris,(parseFloat(p.salgspris)-parseFloat(p.indkoebspris))||""]);
+  const csv = [header,...rows].map(r=>r.map(c=>`"${c??""}"`).join(";")).join("\n");
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob(["\uFEFF"+csv],{type:"text/csv;charset=utf-8;"}));
+  a.download = "tøj-oversigt.csv"; a.click();
+}
+
+function statusInfo(key) { return STATUSSER.find(s => s.key === key) || STATUSSER[0]; }
+
+function fortjeneste() {
+  const s = parseFloat(state.form.salgspris), i = parseFloat(state.form.indkoebspris);
+  return (!isNaN(s) && !isNaN(i)) ? s - i : null;
+}
+
+// ── Render ──
+function render() {
+  document.getElementById("app").innerHTML = buildHTML();
+  attachEvents();
+}
+
+function buildHTML() {
+  if (state.loading) return `<div class="loading"><div style="font-size:40px">👗</div><div style="font-size:14px;letter-spacing:2px">Henter dine varer...</div></div>`;
+
+  const syncColor = state.syncing ? "#c9a96e" : state.syncStatus === "ok" ? "#a8d5a2" : state.syncStatus === "fejl" ? "#f5b7b1" : "transparent";
+  const syncMsg = state.syncing ? "⏳ Gemmer..." : state.syncStatus === "ok" ? "✅ Gemt i Google Sheets!" : state.syncStatus === "fejl" ? "⚠️ Kunne ikke gemme" : "";
+
+  const tabLabel = (key) => {
+    if (key === "tilfoej") return state.editIndex !== null ? "✏️ Rediger" : "➕ Tilføj";
+    if (key === "liste") return `📋 Liste (${state.poster.length})`;
+    return "📊 Overblik";
+  };
+
+  return `
+    <div class="header">
+      <div class="header-sub">Genbrug & Fortjeneste</div>
+      <div class="header-title">Tøj Tracker</div>
+      <div class="sync-status" style="color:${syncColor}">${syncMsg}</div>
+      <div class="tabs">
+        ${["tilfoej","liste","overblik"].map(k => `<button class="tab${state.view===k?" active":""}" onclick="setState({view:'${k}'})">${tabLabel(k)}</button>`).join("")}
+      </div>
+    </div>
+    <div class="content">
+      ${state.view === "tilfoej" ? buildTilfoej() : ""}
+      ${state.view === "liste" ? buildListe() : ""}
+      ${state.view === "overblik" ? buildOverblik() : ""}
+    </div>
+    ${state.statusModal ? buildModal() : ""}
+  `;
+}
+
+function buildTilfoej() {
+  const f = fortjeneste();
+  const kanGemme = state.form.maerke && state.form.indkoebspris;
+  return `
+    <div class="img-upload" id="img-upload-zone">
+      ${state.imagePreview
+        ? `<img src="${state.imagePreview}" alt="">`
+        : `<div class="img-upload-icon">📷</div><div class="img-upload-text">Tryk for at tage/vælge billede</div>`}
+    </div>
+    <input type="file" id="img-input" accept="image/*" capture="environment" style="display:none">
+    ${state.imagePreview ? `<button class="ai-btn" id="ai-btn" ${state.analyzing?"disabled":""}>
+      ${state.analyzing ? "🔍 Analyserer billede..." : "✨ Analyser med AI"}
+    </button>` : ""}
+
+    <div class="form-group">
+      <div class="field">
+        <label class="label">Kategori</label>
+        <select class="select" onchange="setField('kategori',this.value)">
+          <option value="">Vælg...</option>
+          ${KATEGORI_OPTIONS.map(o=>`<option ${state.form.kategori===o?"selected":""}>${o}</option>`).join("")}
+        </select>
+      </div>
+
+      <div class="field">
+        <label class="label">Mærke</label>
+        <div class="autocomplete-wrap">
+          <input class="input" type="text" value="${esc(state.form.maerke)}" placeholder="f.eks. H&M, Zara, Name It..." id="maerke-input" autocomplete="off">
+          ${state.maerkeSuggestions.length ? `<div class="autocomplete-list">
+            ${state.maerkeSuggestions.map(s=>`<div class="autocomplete-item" onclick="pickMaerke('${esc(s)}')">${s}</div>`).join("")}
+          </div>` : ""}
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="label">Type</label>
+        <div class="autocomplete-wrap">
+          <input class="input" type="text" value="${esc(state.form.toejtype)}" placeholder="f.eks. Kjole, Bukser, Bluse..." id="toejtype-input" autocomplete="off">
+          ${state.toejtypeSuggestions.length ? `<div class="autocomplete-list">
+            ${state.toejtypeSuggestions.map(s=>`<div class="autocomplete-item" onclick="pickToejtype('${esc(s)}')">${s}</div>`).join("")}
+          </div>` : ""}
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="label">Beskrivelse</label>
+        <input class="input" type="text" value="${esc(state.form.beskrivelse)}" placeholder="f.eks. Rød sommerkjole med blomster" onchange="setField('beskrivelse',this.value)">
+      </div>
+
+      <div class="field">
+        <label class="label">Størrelse</label>
+        <input class="input" type="text" value="${esc(state.form.stoerrelse)}" placeholder="f.eks. 104, S, 36..." onchange="setField('stoerrelse',this.value)">
+      </div>
+
+      <div class="field">
+        <label class="label">Stand</label>
+        <select class="select" onchange="setField('stand',this.value)">
+          <option value="">Vælg...</option>
+          ${STAND_OPTIONS.map(o=>`<option ${state.form.stand===o?"selected":""}>${o}</option>`).join("")}
+        </select>
+      </div>
+
+      <div class="price-row">
+        <div class="field">
+          <label class="label">Indkøbspris (kr)</label>
+          <input class="input" type="number" value="${state.form.indkoebspris}" placeholder="0" style="text-align:right" onchange="setField('indkoebspris',this.value)">
+        </div>
+        <div class="field">
+          <label class="label">Salgspris (kr)</label>
+          <input class="input" type="number" value="${state.form.salgspris}" placeholder="0" style="text-align:right" onchange="setField('salgspris',this.value)">
+        </div>
+      </div>
+
+      ${f !== null ? `<div class="profit-box ${f>=0?"pos":"neg"}">
+        <span class="profit-label">Fortjeneste</span>
+        <span class="profit-val ${f>=0?"pos":"neg"}">${f>=0?"+":""}${f} kr</span>
+      </div>` : ""}
+
+      <button class="save-btn" ${!kanGemme?"disabled":""} onclick="gemVare()">
+        ${state.editIndex !== null ? "Gem ændringer" : "Gem vare"}
+      </button>
+      ${state.editIndex !== null ? `<button class="cancel-btn" onclick="setState({editIndex:null,form:emptyForm(),imagePreview:null})">Annuller redigering</button>` : ""}
+    </div>
+  `;
+}
+
+function buildListe() {
+  const totalSolgt = state.poster.filter(p=>p.status==="solgt").reduce((s,p)=>{
+    const f = parseFloat(p.salgspris)-parseFloat(p.indkoebspris);
+    return s+(isNaN(f)?0:f);
+  },0);
+
+  const katGrupper = [
+    { label:"👶 Babyudstyr", match: k=>k==="Babyudstyr" },
+    { label:"🧒 Børnetøj", match: k=>k==="Børnetøj" },
+    { label:"👗 Dame & Herre", match: k=>k==="Dametøj"||k==="Herretøj"||!k },
+  ];
+
+  if (!state.poster.length) return `<div class="empty"><div class="empty-icon">👗</div><div class="empty-text">Ingen varer endnu</div><div style="font-size:12px;margin-top:4px;color:#aaa">Gå til Tilføj og registrer din første vare</div></div>`;
+
+  return `
+    <div class="summary-box">
+      <div><div class="summary-label">Solgt i alt</div><div class="summary-val">+${totalSolgt.toFixed(0)} kr</div></div>
+      <button class="excel-btn" onclick="eksporter()">📥 Excel</button>
+    </div>
+    ${katGrupper.map(({label,match}) => {
+      const varer = state.poster.filter(p=>match(p.kategori));
+      if (!varer.length) return "";
+      return `<div class="group">
+        <div class="group-header">${label} (${varer.length})</div>
+        ${varer.map(item => {
+          const i = state.poster.indexOf(item);
+          const si = statusInfo(item.status||"klar");
+          const fv = parseFloat(item.salgspris)-parseFloat(item.indkoebspris);
+          const profitColor = !isNaN(fv)&&fv>=0 ? "#2d6a2d" : "#888";
+          return `<div class="card">
+            ${item.billede ? `<img class="card-img" src="${item.billede}" alt="">` : ""}
+            <div class="card-body">
+              <div class="card-row">
+                <div style="flex:1">
+                  <div class="card-name">${esc(item.maerke)||"Ukendt mærke"}</div>
+                  <div class="card-desc">${esc(item.beskrivelse)}</div>
+                  <div class="card-meta">${[item.toejtype,item.stoerrelse,item.stand].filter(Boolean).join(" · ")}</div>
+                  <div class="card-badges">
+                    <span class="badge" style="background:${si.bg};color:${si.color}">${si.emoji} ${si.label}</span>
+                    ${item.salgssted?`<span style="font-size:10px;color:#aaa">@ ${esc(item.salgssted)}</span>`:""}
+                  </div>
+                </div>
+                <div class="card-price">
+                  <div class="card-profit" style="color:${profitColor}">${!isNaN(fv)?`${fv>=0?"+":""}${fv} kr`:"-"}</div>
+                  <div class="card-price-sub">${item.indkoebspris||"?"} → ${item.salgspris||"?"} kr</div>
+                </div>
+              </div>
+              <div class="card-actions">
+                <button class="btn-sm" style="background:#eaf3fb;color:#1a5276" onclick="openModal(${i})">🔄 Status</button>
+                <button class="btn-sm" style="background:#f0ebe5;color:#1a1410" onclick="redigerVare(${i})">✏️ Rediger</button>
+                <button class="btn-sm" style="background:#fdecea;color:#c0392b" onclick="sletVare(${i})">🗑️</button>
+              </div>
+            </div>
+          </div>`;
+        }).join("")}
+      </div>`;
+    }).join("")}
+  `;
+}
+
+function buildOverblik() {
+  return STATUSSER.map(st => {
+    const varer = state.poster.filter(p=>(p.status||"klar")===st.key);
+    const fortj = varer.reduce((s,p)=>{const f=parseFloat(p.salgspris)-parseFloat(p.indkoebspris);return s+(isNaN(f)?0:f);},0);
+    return `<div class="overblik-card">
+      <div class="overblik-header" style="margin-bottom:${varer.length?12:0}px">
+        <div class="overblik-left">
+          <span class="overblik-emoji">${st.emoji}</span>
+          <div><div class="overblik-name">${st.label}</div><div class="overblik-count">${varer.length} vare${varer.length!==1?"r":""}</div></div>
+        </div>
+        ${st.key==="solgt"&&varer.length?`<div class="overblik-profit">+${fortj.toFixed(0)} kr</div>`:""}
+      </div>
+      ${st.key==="tilsalg"&&varer.length ? SALGSSTED_OPTIONS.map(sted=>{
+        const antal = varer.filter(p=>p.salgssted===sted).length;
+        return antal?`<div class="sted-row" style="background:#eaf3fb"><span>${sted}</span><span style="font-weight:bold">${antal} stk</span></div>`:"";
+      }).join("")+(varer.filter(p=>!p.salgssted).length?`<div class="sted-row" style="background:#f5f5f5"><span style="color:#aaa">Intet sted valgt</span><span style="font-weight:bold">${varer.filter(p=>!p.salgssted).length} stk</span></div>`:"") : ""}
+      ${(st.key==="arkiveret"||st.key==="klar")&&varer.length ? (st.key==="klar"?varer.slice(0,4):varer).map((p,i)=>`
+        <div style="font-size:12px;color:#888;padding:4px 0;border-bottom:${i<varer.length-1?"1px solid #f0ebe5":"none"}">${esc(p.maerke)} – ${esc(p.toejtype||p.beskrivelse)}</div>
+      `).join("")+(st.key==="klar"&&varer.length>4?`<div style="font-size:12px;color:#aaa">...og ${varer.length-4} mere</div>`:"") : ""}
+    </div>`;
+  }).join("");
+}
+
+function buildModal() {
+  const { item, index, valgtStatus, valgtSted } = state.statusModal;
+  return `<div class="modal-overlay" onclick="setState({statusModal:null})">
+    <div class="modal" onclick="event.stopPropagation()">
+      <div class="modal-sub">Opdater status</div>
+      <div class="modal-title">${esc(item.maerke)} – ${esc(item.toejtype||item.beskrivelse)}</div>
+      ${STATUSSER.map(st=>`<button class="status-btn" style="background:${valgtStatus===st.key?st.bg:"#fff"};border-color:${valgtStatus===st.key?st.color:"#e8e0d8"};color:${st.color}" onclick="setModalStatus('${st.key}')">${st.emoji} ${st.label}</button>`).join("")}
+      ${valgtStatus==="tilsalg"?`<div class="field" style="margin-bottom:16px">
+        <label class="label">Salgssted</label>
+        <select class="select" onchange="setModalSted(this.value)">
+          <option value="">Vælg salgssted...</option>
+          ${SALGSSTED_OPTIONS.map(o=>`<option ${valgtSted===o?"selected":""}>${o}</option>`).join("")}
+        </select>
+      </div>`:""}
+      <button class="save-btn" onclick="opdaterStatus(${index},'${valgtStatus}','${valgtSted||""}')">Gem status</button>
+    </div>
+  </div>`;
+}
+
+// ── Event helpers ──
+function esc(s) { return String(s||"").replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;"); }
+function setField(f,v) { setState({ form: { ...state.form, [f]: v } }); }
+function pickMaerke(s) { setState({ form:{...state.form,maerke:s}, maerkeSuggestions:[] }); }
+function pickToejtype(s) { setState({ form:{...state.form,toejtype:s}, toejtypeSuggestions:[] }); }
+function setModalStatus(s) { setState({ statusModal:{...state.statusModal,valgtStatus:s} }); }
+function setModalSted(s) { setState({ statusModal:{...state.statusModal,valgtSted:s} }); }
+function openModal(i) { setState({ statusModal:{item:state.poster[i],index:i,valgtStatus:state.poster[i].status||"klar",valgtSted:state.poster[i].salgssted||""} }); }
+
+function attachEvents() {
+  // Image upload
+  const zone = document.getElementById("img-upload-zone");
+  const input = document.getElementById("img-input");
+  if (zone && input) {
+    zone.onclick = () => input.click();
+    input.onchange = (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (ev) => setState({ imagePreview: ev.target.result, imageBase64: ev.target.result.split(",")[1] });
+      reader.readAsDataURL(file);
+    };
+  }
+
+  // AI button
+  const aiBtn = document.getElementById("ai-btn");
+  if (aiBtn) aiBtn.onclick = analyzeImage;
+
+  // Mærke autocomplete
+  const maerkeInput = document.getElementById("maerke-input");
+  if (maerkeInput) {
+    maerkeInput.oninput = (e) => {
+      const val = e.target.value;
+      setState({ form:{...state.form,maerke:val}, maerkeSuggestions: suggestions(val,MAERKE_FORSLAG,"maerke") });
+    };
+    maerkeInput.onblur = () => setTimeout(()=>setState({maerkeSuggestions:[]}),200);
+  }
+
+  // Tøjtype autocomplete
+  const toejtypeInput = document.getElementById("toejtype-input");
+  if (toejtypeInput) {
+    toejtypeInput.oninput = (e) => {
+      const val = e.target.value;
+      setState({ form:{...state.form,toejtype:val}, toejtypeSuggestions: suggestions(val,TOEJTYPE_OPTIONS,"toejtype") });
+    };
+    toejtypeInput.onblur = () => setTimeout(()=>setState({toejtypeSuggestions:[]}),200);
+  }
+}
+
+// Start
+loadFromSheets();
+render();
+</script>
+</body>
+</html>
