@@ -145,6 +145,7 @@
 <script>
 const PIN_CODE = "2843";
 let pinEntry = "";
+document.addEventListener("DOMContentLoaded", function() {
 const grid = document.getElementById("pin-grid");
 [1,2,3,4,5,6,7,8,9,"",0,"X"].forEach(n => {
   const btn = document.createElement("button");
@@ -186,12 +187,14 @@ if (sessionStorage.getItem("toj_unlocked") === "1") {
   document.getElementById("lock-screen").style.display = "none";
   document.getElementById("app").style.display = "block";
 }
+}); // end DOMContentLoaded
 </script>
 <script>
 const PIN_CODE = "2843";
 let pinEntry = "";
 
 // Build numpad
+document.addEventListener("DOMContentLoaded", function() {
 const grid = document.getElementById("pin-grid");
 [1,2,3,4,5,6,7,8,9,"",0,"X"].forEach(n => {
   const btn = document.createElement("button");
@@ -236,6 +239,7 @@ if (sessionStorage.getItem("toj_unlocked") === "1") {
   document.getElementById("lock-screen").style.display = "none";
   document.getElementById("app").style.display = "block";
 }
+}); // end DOMContentLoaded
 </script>
 <script>
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyqWMoSo5LEd5czqobAEX7Fv4BHwNVLpMTysSC_GVNfyXP79IyShhXZ7LjHcc6J9ncT/exec";
