@@ -115,7 +115,128 @@
   </style>
 </head>
 <body>
-<div id="app"></div>
+<!-- PIN LOCK -->
+<div id="lock-screen" style="position:fixed;inset:0;background:#f5f0eb;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:'Jost',sans-serif;">
+  <div style="font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:300;letter-spacing:6px;text-transform:uppercase;margin-bottom:8px;">Tøj <em style="font-style:italic;color:#9a8f84">Tracker</em></div>
+  <div style="font-size:10px;letter-spacing:3px;text-transform:uppercase;color:#9a8f84;margin-bottom:48px;">Indtast pinkode</div>
+  <div id="pin-dots" style="display:flex;gap:16px;margin-bottom:40px;">
+    <div class="pdot" style="width:12px;height:12px;border-radius:50%;border:1px solid #9a8f84;background:transparent;transition:background 0.2s;"></div>
+    <div class="pdot" style="width:12px;height:12px;border-radius:50%;border:1px solid #9a8f84;background:transparent;transition:background 0.2s;"></div>
+    <div class="pdot" style="width:12px;height:12px;border-radius:50%;border:1px solid #9a8f84;background:transparent;transition:background 0.2s;"></div>
+    <div class="pdot" style="width:12px;height:12px;border-radius:50%;border:1px solid #9a8f84;background:transparent;transition:background 0.2s;"></div>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(3,72px);gap:12px;" id="pin-grid"></div>
+  <div id="pin-error" style="margin-top:24px;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#8b4a3f;opacity:0;transition:opacity 0.3s;">Forkert kode</div>
+</div>
+<!-- PIN LOCK -->
+<div id="lock-screen" style="position:fixed;inset:0;background:#f5f0eb;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:'Jost',sans-serif;">
+  <div style="font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:300;letter-spacing:6px;text-transform:uppercase;margin-bottom:8px;">Tøj <em style="font-style:italic;color:#9a8f84">Tracker</em></div>
+  <div style="font-size:10px;letter-spacing:3px;text-transform:uppercase;color:#9a8f84;margin-bottom:48px;">Indtast pinkode</div>
+  <div id="pin-dots" style="display:flex;gap:16px;margin-bottom:40px;">
+    <div class="pdot" style="width:12px;height:12px;border-radius:50%;border:1px solid #9a8f84;background:transparent;transition:background 0.2s;"></div>
+    <div class="pdot" style="width:12px;height:12px;border-radius:50%;border:1px solid #9a8f84;background:transparent;transition:background 0.2s;"></div>
+    <div class="pdot" style="width:12px;height:12px;border-radius:50%;border:1px solid #9a8f84;background:transparent;transition:background 0.2s;"></div>
+    <div class="pdot" style="width:12px;height:12px;border-radius:50%;border:1px solid #9a8f84;background:transparent;transition:background 0.2s;"></div>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(3,72px);gap:12px;" id="pin-grid"></div>
+  <div id="pin-error" style="margin-top:24px;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#8b4a3f;opacity:0;transition:opacity 0.3s;">Forkert kode</div>
+</div>
+<div id="app" style="display:none"></div>
+<script>
+const PIN_CODE = "2843";
+let pinEntry = "";
+const grid = document.getElementById("pin-grid");
+[1,2,3,4,5,6,7,8,9,"",0,"X"].forEach(n => {
+  const btn = document.createElement("button");
+  btn.textContent = n === "X" ? "\u232b" : String(n);
+  btn.style.cssText = "width:72px;height:72px;border:1px solid #ede7df;background:#faf8f5;font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:300;cursor:pointer;border-radius:50%;transition:background 0.15s;";
+  if (n === "") btn.style.visibility = "hidden";
+  btn.addEventListener("mouseover", () => btn.style.background = "#ede7df");
+  btn.addEventListener("mouseout", () => btn.style.background = "#faf8f5");
+  btn.addEventListener("click", () => pinPress(String(n)));
+  grid.appendChild(btn);
+});
+function pinPress(val) {
+  if (val === "") return;
+  if (val === "X") { pinEntry = pinEntry.slice(0,-1); updateDots(); return; }
+  if (pinEntry.length >= 4) return;
+  pinEntry += val;
+  updateDots();
+  if (pinEntry.length === 4) {
+    setTimeout(() => {
+      if (pinEntry === PIN_CODE) {
+        sessionStorage.setItem("toj_unlocked","1");
+        document.getElementById("lock-screen").style.display = "none";
+        document.getElementById("app").style.display = "block";
+        loadFromSheets(); render();
+      } else {
+        document.getElementById("pin-error").style.opacity = "1";
+        setTimeout(() => { document.getElementById("pin-error").style.opacity="0"; pinEntry=""; updateDots(); }, 1200);
+      }
+    }, 200);
+  }
+}
+function updateDots() {
+  document.querySelectorAll(".pdot").forEach((d,i) => {
+    d.style.background = i < pinEntry.length ? "#2c2420" : "transparent";
+    d.style.borderColor = i < pinEntry.length ? "#2c2420" : "#9a8f84";
+  });
+}
+if (sessionStorage.getItem("toj_unlocked") === "1") {
+  document.getElementById("lock-screen").style.display = "none";
+  document.getElementById("app").style.display = "block";
+}
+</script>
+<script>
+const PIN_CODE = "2843";
+let pinEntry = "";
+
+// Build numpad
+const grid = document.getElementById("pin-grid");
+[1,2,3,4,5,6,7,8,9,"",0,"X"].forEach(n => {
+  const btn = document.createElement("button");
+  btn.textContent = n === "X" ? "⌫" : n;
+  btn.style.cssText = "width:72px;height:72px;border:1px solid #ede7df;background:#faf8f5;font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:300;cursor:pointer;border-radius:50%;transition:background 0.15s;";
+  if (n === "") btn.style.visibility = "hidden";
+  btn.onmouseover = () => btn.style.background = "#ede7df";
+  btn.onmouseout = () => btn.style.background = "#faf8f5";
+  btn.onclick = () => pinPress(String(n));
+  grid.appendChild(btn);
+});
+
+function pinPress(val) {
+  if (val === "") return;
+  if (val === "X") { pinEntry = pinEntry.slice(0,-1); updateDots(); return; }
+  if (pinEntry.length >= 4) return;
+  pinEntry += val;
+  updateDots();
+  if (pinEntry.length === 4) {
+    setTimeout(() => {
+      if (pinEntry === PIN_CODE) {
+        sessionStorage.setItem("toj_unlocked","1");
+        document.getElementById("lock-screen").style.display = "none";
+        document.getElementById("app").style.display = "block";
+        loadFromSheets(); render();
+      } else {
+        document.getElementById("pin-error").style.opacity = "1";
+        setTimeout(() => { document.getElementById("pin-error").style.opacity="0"; pinEntry=""; updateDots(); }, 1200);
+      }
+    }, 200);
+  }
+}
+
+function updateDots() {
+  document.querySelectorAll(".pdot").forEach((d,i) => {
+    d.style.background = i < pinEntry.length ? "#2c2420" : "transparent";
+    d.style.borderColor = i < pinEntry.length ? "#2c2420" : "#9a8f84";
+  });
+}
+
+if (sessionStorage.getItem("toj_unlocked") === "1") {
+  document.getElementById("lock-screen").style.display = "none";
+  document.getElementById("app").style.display = "block";
+}
+</script>
 <script>
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyqWMoSo5LEd5czqobAEX7Fv4BHwNVLpMTysSC_GVNfyXP79IyShhXZ7LjHcc6J9ncT/exec";
 const STAND_OPTIONS = ["Ny med prismærke","Som ny","Meget god","God","Acceptabel"];
